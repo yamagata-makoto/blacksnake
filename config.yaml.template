@@ -1,0 +1,40 @@
+# Blacksnake Bitcoin Arbitrage
+# Configuration file
+
+system:
+    demo_mode: false
+    interval: 3.0
+
+trade:
+    volume: 0.01
+    target_profit_rate: 0.4
+
+notify:
+    line:
+        enable: true
+        url: "https://notify-api.line.me/api/notify"
+        token: "YOUR TOKEN"
+
+exchanges:
+
+    # bitFlyer
+    bitflyer:
+        enable: true
+        apikey: "YOUR API KEY"
+        secret: "YOUR SECRET KEY" 
+        fees: 0.15 
+    
+    # Liquid
+    liquid:
+        enable: true
+        apikey: "YOUR API KEY"
+        secret: "YOUR SECRET KEY" 
+        fees: 0.0
+
+    # BTCBOX
+    btcbox:
+        enable: true
+        apikey: "YOUR API KEY"
+        secret: "YOUR SECRET KEY" 
+        fees: 0.05
+
