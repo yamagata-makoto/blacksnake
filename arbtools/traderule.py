@@ -158,13 +158,16 @@ class TradeRule:
 
     def validate_plan(self, plan):
 
+        is_valid = False
+
         buy = plan.best('buy')
         sell = plan.best('sell')
         vol = plan.target_volume()
-        is_valid = False
-        if all([buy, sell, vol, buy['exchange_name']!=sell['exchange_name']]):
-            self._broker.emit('planned', plan)
-            is_valid = True
+        if all([buy, sell, vol]):
+            if buy['exchange_name'] != sell['exchange_name']:
+                self._broker.emit('planned', plan)
+                is_valid = True
+
         return is_valid
 
     def new_status(self, data):
