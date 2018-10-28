@@ -52,7 +52,7 @@ class Broker:
 
         def _long_OK(name, quote):
 
-            if name in balances:
+            if not name in balances:
                 return False
 
             _, quote_volume = quote
@@ -63,7 +63,7 @@ class Broker:
 
         def _short_OK(name, quote):
 
-            if name in balances:
+            if not name in balances:
                 return False
 
             _, quote_volume = quote
