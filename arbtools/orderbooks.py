@@ -3,8 +3,6 @@ from math import ceil, floor
 from functools import partial
 from operator import itemgetter
 from itertools import groupby
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import as_completed
 from arbtools.quotes import Quotes
 
 
@@ -14,26 +12,9 @@ class OrderBooks:
 
         self._api = api
 
-        items = (data if data else self._fetch_orderbooks('BTC/JPY')).items()
+        items = (data if data else api.fetch_orderbooks()).items()
         self._errors = { k: v for k, v in items if isinstance(v, Exception) }
         self._data = { k: v for k, v in items if k not in self._errors }
-
-    def _fetch_orderbooks(self, product):
-
-        def _fetch(api):
-            return api.fetch_order_book(product)
-
-        result = {}
-        with ThreadPoolExecutor(max_workers=8) as _:
-            futures = { _.submit(_fetch, v): k for k, v in self._api.items() }
-            for future in as_completed(futures):
-                exchange_name = futures[future]
-                try:
-                    data = future.result()
-                    result[exchange_name] = data
-                except Exception as e:
-                    result[exchange_name] = e
-        return result
 
     def round(self, price_unit=100):
 

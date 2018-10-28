@@ -1,69 +1,5 @@
 import datetime
 from functools import partial, reduce
-from arbtools.orderbooks import OrderBooks
-
-
-def _create_orders_params(data):
-
-    def _params(acc, side):
-        order = data[side]
-        exchange_name = order['exchange_name']
-        volume = data['volume']
-        price = order['quote'][0]
-        params = {
-            'symbol': 'BTC/JPY',
-            'type': 'limit',
-            'side': side,
-            'amount': volume,
-            'price': price
-        }
-        acc[exchange_name] = params
-        return acc
-
-    return reduce(_params, ['buy', 'sell'], {})
-    
-def _create_orders(api, data):
-
-    params = _create_orders_params(data)
-
-    def _execute(name):
-        args = params[name]
-        if ('orders' in data) and (name in data['orders']):
-            order = data['orders'][name]
-            if not isinstance(order, Exception):
-                return data['orders'][name]
-        return api[name].create_order(**args)
-
-    result = {}
-    with ThreadPoolExecutor(max_workers=2) as _:
-        futures = { _.submit(_execute, name): name for name in api }
-        for future in as_completed(futures):
-            exchange_name = futures[future]
-            try:
-                result[exchange_name] = future.result()
-            except Exception as e:
-                result[exchange_name] = e
-
-    return result
-
-def _fetch_orders(api, data):
-
-    def _execute(name, order):
-        id_ = order['id']
-        return api[name].fetch_order(id_)
-
-    result = {}
-    with ThreadPoolExecutor(max_workers=2) as _:
-        orders = data['orders']
-        futures = { _.submit(_execute, k, v): k for k, v in orders.items() }
-        for future in as_completed(futures):
-            exchange_name = futures[future]
-            try:
-                result[exchange_name] = future.result()
-            except Exception as e:
-                result[exchange_name] = e
-
-    return result
 
 
 def nop(api, status, next_state, **kwargs):
@@ -77,7 +13,7 @@ def execute_order(api, status, next_state, **kwargs):
     if not 'timestamp' in data:
         data['timestamp'] = datetime.datetime.now()
 
-    orders = _create_orders(api, data)
+    orders = api.create_orders(data)
     for exchange_name, result in orders.items():
         if isinstance(result, Exception):
             next_state = current_state
@@ -88,7 +24,7 @@ def execute_order(api, status, next_state, **kwargs):
 def confirm_order(api, status, next_state, **kwargs):
 
     current_state, data = status
-    orders = _fetch_order(api, data)
+    orders = api.fetch_order(data)
 
     def _count_closed(acc, item):
         name, order = item

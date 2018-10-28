@@ -11,7 +11,7 @@ class Positions:
             status = (quote['ask'] is not None, quote['bid'] is not None)
             acc[name] = (balance, status)
             return acc
-        self._data = reduce(_position, self._api, {})
+        self._data = reduce(_position, self._api.names(), {})
 
     def sum(self, coin):
 
