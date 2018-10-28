@@ -6,10 +6,11 @@ class Positions:
         
         self._api = api
         def _position(acc, name):
-            balance = balances[name]
-            quote = quotes[name]
-            status = (quote['ask'] is not None, quote['bid'] is not None)
-            acc[name] = (balance, status)
+            if name in balances:
+                balance = balances[name]
+                quote = quotes[name]
+                status = (quote['ask'] is not None, quote['bid'] is not None)
+                acc[name] = (balance, status)
             return acc
         self._data = reduce(_position, self._api.names(), {})
 
