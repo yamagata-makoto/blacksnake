@@ -100,8 +100,8 @@ class TradeRule:
         sell = plan.best('sell')
         vol = plan.target_volume()
         if all([buy, sell, vol]):
+            self._broker.emit('planned', plan)
             if buy['exchange_name'] != sell['exchange_name']:
-                self._broker.emit('planned', plan)
                 is_valid = True
 
         return is_valid

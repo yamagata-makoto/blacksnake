@@ -51,8 +51,6 @@ class Broker:
         investments = self._to_investments(quotes, volume)
 
         def _long_OK(name, quote):
-            if not name in balances:
-                return False
             _, quote_volume = quote
             return all([
                 quote_volume > volume,
@@ -60,8 +58,6 @@ class Broker:
             ])
 
         def _short_OK(name, quote):
-            if not name in balances:
-                return False
             _, quote_volume = quote
             return all([
                 quote_volume > volume,
