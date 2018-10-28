@@ -6,7 +6,7 @@ class Positions:
         
         self._api = api
         def _position(acc, name):
-            if name in balances:
+            if (name in balances) and (name in quotes):
                 balance = balances[name]
                 quote = quotes[name]
                 status = (quote['ask'] is not None, quote['bid'] is not None)

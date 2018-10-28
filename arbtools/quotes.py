@@ -26,3 +26,7 @@ class Quotes:
 
         return self._data[name]
 
+    def __contains__(self, name):
+
+        return name in self._data
+
