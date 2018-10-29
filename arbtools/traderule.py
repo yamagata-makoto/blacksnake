@@ -108,7 +108,7 @@ class TradeRule:
 
     def new_status(self, data):
 
-        self.emit('found_open', data)
+        self._broker.emit('found_open', data)
         return ('open_pair', data)
 
     def execute(self, api, status):
