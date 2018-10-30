@@ -25,7 +25,21 @@ POSITION_FORM = ", ".join([
 ])
 
 PAIRS_FORM = " ".join([
-    "    >>{0:10s}",
+    ">>  {0:10s}",
+    "{1:,.0f}",
+    "{2:5.3f}",
+    "=>",
+    "{3:10s}",
+    "{4:,.0f}",
+    "{5:5.3f}",
+    "|",
+    "{6:,.0f}",
+    "|",
+    "{7:,.0f}",
+])
+
+UNEXEC_FORM = " ".join([
+    "    ??{0:10s}",
     "{1:,.0f}",
     "{2:5.3f}",
     "=>",
@@ -101,11 +115,26 @@ class CUI:
             data['open_deal']['expected_profit'],
             -data['expected_profit'],
             ))
-        print("")
+
+    def show_unexecuted(self, data):
+
+        sell = data['sell']
+        buy  = data['buy']
+        print(UNEXEC_FORM.format(
+            buy['exchange_name'],
+            buy['quote'][0],
+            buy['quote'][1],
+            sell['exchange_name'],
+            sell['quote'][0],
+            sell['quote'][1],
+            data['open_deal']['expected_profit'],
+            -data['expected_profit'],
+            ))
 
 _cui = CUI(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 def show_arbitrage(plan):
+    print("")
     return _cui.show_arbitrage(plan)
 
 def show_positions(plan):

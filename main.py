@@ -10,6 +10,15 @@ def planned(sender, plan):
     cui.show_arbitrage(plan)
     cui.show_positions(plan)
 
+def reverse_planned(sender, data):
+
+    cui.show_openpairs(data)
+
+def quote_error(sender, errors):
+
+    for name, error in errors:
+        print(name, error)
+
 def found_open(sender, data, notify):
 
     notify.post_message('found_open', data)
@@ -26,9 +35,6 @@ def close_pair(sender, data, notify):
 
     notify.post_message('close_pair', data)
 
-def lookup_close(sender, data, notify):
-
-    cui.show_openpairs(data)
 
 if __name__ == '__main__':
 
@@ -39,17 +45,17 @@ if __name__ == '__main__':
     notify = LINENotificator(cfg.notify.line)
 
     broker.on('planned', planned)
+    broker.on('reverse_planned', reverse_planned)
+    broker.on('quote_error', quote_error)
     broker.on('found_open', found_open, notify=notify)
     broker.on('open_pair', open_pair, notify=notify)
     broker.on('found_close', found_close, notify=notify)
     broker.on('close_pair', close_pair, notify=notify)
-    broker.on('lookup_close', lookup_close, notify=notify)
 
     while True:
-
         quotes = provider.orderbooks().round().quotes()
         plan = broker.planning(quotes)
-        broker.request(plan.deal()).save_to('deals.pcl')
-        broker.process_requests()
-        time.sleep(3)
+        broker.request(plan.deal())
+        broker.process_requests().save_to('deals.pcl')
+        time.sleep(cfg.system.interval)
 

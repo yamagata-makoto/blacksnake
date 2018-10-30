@@ -13,7 +13,8 @@ def execute_order(api, status, next_state, **kwargs):
     if not 'timestamp' in data:
         data['timestamp'] = datetime.datetime.now()
 
-    orders = api.create_orders(data)
+    ordered = data['orders'] if 'orders' in data else None 
+    orders = api.create_orders(data, ordered)
     for exchange_name, result in orders.items():
         if isinstance(result, Exception):
             next_state = current_state
@@ -24,42 +25,48 @@ def execute_order(api, status, next_state, **kwargs):
 def confirm_order(api, status, next_state, **kwargs):
 
     current_state, data = status
-    orders = api.fetch_order(data)
+    ordered = data['orders'] if 'orders' in data else None 
+    orders = api.fetch_orders(data, ordered)
 
     def _count_closed(acc, item):
         name, order = item
+        if isinstance(order, Exception):
+            return acc
         return acc + (order['status'] == 'closed')
 
+    data['orders'] = orders
     if reduce(_count_closed, orders.items(), 0) < 2:
         next_state = current_state
-    else:
-        data['orders'] = orders
 
     return (next_state, data)
 
 def close_pair(api, status, next_state, **kwargs):
 
+    current_state, data = status
+    broker = kwargs['broker']
+    quotes = kwargs['quotes']
+
     def _reverse_order(broker, data):
 
         # 反対売買を計画する
-        quotes = broker.orderbooks().round().quotes()
         buy = data['sell']['exchange_name']
         sell = data['buy']['exchange_name']
         volume = data['volume']
         plan = broker.specified(quotes, buy, sell, volume)
-
-        allowed_exitcost = status['allowed_exitcost'] 
-        result = {
-            'open_deal': data,
-            **plan.deal() 
-        }
+        result = None
+        if plan:
+            result = {
+                'open_deal': data,
+                **plan.deal() 
+            }
         return result
 
-    current_state, data = status
-    broker = kwargs['broker']
 
     result = _reverse_order(broker, data)
-    broker.emit('lookup_close', result)
+    if not result:
+        return status
+
+    broker.emit('reverse_planned', result)
 
     # 許容されるexitcost以下なら反対売買を実行
     new_status = status
@@ -70,7 +77,7 @@ def close_pair(api, status, next_state, **kwargs):
 
     if can_reverse_trade(result):
         rev_status = (current_state, result)
-        new_status = execute_order(api, rev_status, next_satate)
+        new_status = execute_order(api, rev_status, next_state)
 
     return new_status
 
@@ -106,17 +113,24 @@ class TradeRule:
 
         return is_valid
 
+    def validate_quotes(self, quotes):
+
+        if quotes.has_error():
+            self._broker.emit('quote_error', quotes.errors())
+        return quotes
+
     def new_status(self, data):
 
         self._broker.emit('found_open', data)
         return ('open_pair', data)
 
-    def execute(self, api, status):
+    def execute(self, status, quotes):
 
+        api = self._broker._api
         status_name, _ = status
 
         f = self.rule[status_name]
-        new_status = f(api, status, broker=self._broker)
+        new_status = f(api, status, broker=self._broker, quotes=quotes)
 
         if status_name == 'confirm_open':
             if new_status[0] == 'close_pair':

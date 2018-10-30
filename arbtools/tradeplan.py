@@ -100,6 +100,6 @@ class TradePlan:
             'deal_id': uuid.uuid4().hex,
             'expected_profit': profit,
             'profit_rate': rate,
-            'allowd_exitcost': allowed_exitcost,
+            'allowed_exitcost': allowed_exitcost,
             **self._deal,
         }

@@ -17,6 +17,7 @@ class Broker:
         self._listeners = defaultdict(lambda x: x)
         self._requests = []
         self._trade_rule = TradeRule(self)
+        self._last_quotes = None
 
     def trade_volume(self):
 
@@ -88,6 +89,9 @@ class Broker:
 
     def planning(self, quotes):
 
+        quotes = self._trade_rule.validate_quotes(quotes)
+        self._last_quotes = quotes
+
         volume = self.trade_volume()
         balances = Balances(self._api)
         quotes_ = self._tradable(volume, quotes, balances)
@@ -100,6 +104,10 @@ class Broker:
 
     def specified(self, quotes, buy, sell, volume):
 
+        quotes = quotes if quotes else self._last_quotes
+            
+        if not all([buy in quotes, sell in quotes]):
+            return None
         quotes_ = {
             buy: {
                 'bid': None,
@@ -112,9 +120,12 @@ class Broker:
         }
         plan = TradePlan(self._api, volume, quotes_, Balances(self._api))
 
-        return plan
+        return plan if plan.target_volume() == volume else None
         
     def request(self, deal):
+
+        if len(self._requests) >= self._trade.max_order:
+            return Nothing()
 
         if isinstance(deal, Nothing):
             return Nothing()
@@ -132,7 +143,7 @@ class Broker:
         new_requests = []
         while self._requests:
             status = self._requests.pop(0)
-            next_status = self._trade_rule.execute(status)
+            next_status = self._trade_rule.execute(status, self._last_quotes)
             if next_status:
                 new_requests.append(next_status)
         self._requests = new_requests
