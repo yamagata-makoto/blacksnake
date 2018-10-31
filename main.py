@@ -1,3 +1,4 @@
+import traceback
 import time
 import config
 import cui
@@ -36,13 +37,9 @@ def close_pair(sender, data, notify):
     notify.post_message('close_pair', data)
 
 
-if __name__ == '__main__':
+def main(provider, notify):
 
-    cfg = config.load()
-
-    provider = Provider(cfg.exchanges)
     broker = provider.broker(cfg.trade).load_from('deals.pcl')
-    notify = LINENotificator(cfg.notify.line)
 
     broker.on('planned', planned)
     broker.on('reverse_planned', reverse_planned)
@@ -58,4 +55,14 @@ if __name__ == '__main__':
         broker.request(plan.deal())
         broker.process_requests().save_to('deals.pcl')
         time.sleep(cfg.system.interval)
+
+if __name__ == '__main__':
+
+    cfg = config.load()
+    notify = LINENotificator(cfg.notify.line)
+    provider = Provider(cfg.exchanges)
+    try:
+        main(provider, notify)
+    except Exception as e:
+        notify.post_message(None, traceback.format_exc()) 
 

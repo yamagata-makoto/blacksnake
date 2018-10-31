@@ -1,3 +1,4 @@
+from collections import defaultdict
 import requests
 
 
@@ -8,12 +9,11 @@ class LINENotificator:
         self.enable = params.enable
         self.token = params.token
         self.url = params.url
-        self._formatter = {
-            'found_open': self._format_found_open,
-            'open_pair': self._format_open,
-            'found_close': self._format_found_close,
-            'close_pair': self._format_close,
-        }
+        self._formatter = defaultdict(lambda: lambda x: x)
+        self._formatter['found_open'] = self._format_found_open
+        self._formatter['open_pair'] = self._format_open
+        self._formatter['found_close'] = self._format_found_close
+        self._formatter['close_pair'] = self._format_close
 
     def post_message(self, trigger_name, data):
 
