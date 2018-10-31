@@ -121,10 +121,18 @@ class Broker:
         plan = TradePlan(self._api, volume, quotes_, Balances(self._api))
 
         return plan if plan.target_volume() == volume else None
+
+    def request_is_ready(self):
+        # 未完了のオープン注文があるか？
+        reply = True
+        status_list = [ status for status, _ in self._requests]
+        if 'open_pair' in status_list or 'confirm_open' in status_list:
+            reply = False
+        return reply
         
     def request(self, deal):
 
-        if not self._trade_rule.is_ready():
+        if not self.request_is_ready():
             # 未完了のオープン注文がある場合、新規にリクエストを積まない
             return Notiong()
 
