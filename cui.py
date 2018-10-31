@@ -86,8 +86,10 @@ class CUI:
 
         positions = plan.positions()
         net_exposure = positions.net_exposure()
+        net_funds = positions.net_funds()
         is_ok = lambda b: '[{}]'.format('OK' if b else 'NG')
-        print("[ Net Exposure {:5.3f} BTC ]".format(net_exposure))
+        header = "[ Net Exposure {:5.3f} BTC / Net Funds {:5.3f} JPY ]"
+        print(header.format(net_exposure, net_funds))
         for name, value in positions.items():
             balance, status = value 
             print(POSITION_FORM.format(
@@ -113,7 +115,7 @@ class CUI:
             sell['quote'][0],
             sell['quote'][1],
             data['open_deal']['expected_profit'],
-            -data['expected_profit'],
+            data['expected_profit'],
             ))
 
     def show_unexecuted(self, data):
