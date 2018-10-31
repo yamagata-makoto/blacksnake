@@ -62,10 +62,10 @@ def close_pair(api, status, next_state, **kwargs):
 
 
     result = _reverse_order(broker, data)
+    broker.emit('reverse_planned', result)
     if not result:
         return status
 
-    broker.emit('reverse_planned', result)
 
     new_status = status
     def can_reverse_trade(result):
