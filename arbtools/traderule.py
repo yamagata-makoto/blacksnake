@@ -47,7 +47,6 @@ def close_pair(api, status, next_state, **kwargs):
     quotes = kwargs['quotes']
 
     def _reverse_order(broker, data):
-
         # 反対売買を計画する
         buy = data['sell']['exchange_name']
         sell = data['buy']['exchange_name']
@@ -68,9 +67,9 @@ def close_pair(api, status, next_state, **kwargs):
 
     broker.emit('reverse_planned', result)
 
-    # 許容されるexitcost以下なら反対売買を実行
     new_status = status
     def can_reverse_trade(result):
+        # 許容されるexitcost以下なら反対売買OK
         allowed_exitcost = result['open_deal']['allowed_exitcost']
         expected_profit = result['expected_profit']
         return (allowed_exitcost+expected_profit) >= 0
