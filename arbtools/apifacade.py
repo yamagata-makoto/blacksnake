@@ -57,7 +57,6 @@ class APIFacade:
                     data = future.result()
                     result[exchange_name] = data
                 except Exception as e:
-                    print(traceback.format_exc())     
                     result[exchange_name] = e
         return result
 
@@ -77,7 +76,6 @@ class APIFacade:
                     data = future.result()
                     result[exchange_name] = data
                 except Exception as e:
-                    print(traceback.format_exc())     
                     result[exchange_name] = e
         return result
 
@@ -121,7 +119,6 @@ class APIFacade:
                 try:
                     result[exchange_name] = future.result()
                 except Exception as e:
-                    print(traceback.format_exc())     
                     result[exchange_name] = e
 
         return result
@@ -146,7 +143,6 @@ class APIFacade:
                 try:
                     result[exchange_name] = future.result()
                 except Exception as e:
-                    print(traceback.format_exc())     
                     result[exchange_name] = e
 
         return result
