@@ -33,15 +33,19 @@ class LINENotificator:
             data['volume'],
             buy['quote'][0]*data['volume'],
             data['expected_profit'],
+            data['expected_profit']/2.0,
             data['deal_id'],
         ) 
         return "\n".join([
+            "<<ポジションオープン>>"
             "[{0:}=>{1:}]",
             "ASK: {2:,.0f}",
             "BID: {3:,.0f}",
             "VOL: {4:}",
-            "取引ID:{7:}が約定しました。",
-            "{5:,.0f}円を投下し{6:,.0f}円の暫定利益を確保しました。",
+            "投下資本: {5:,.0f}円",
+            "暫定利益: {6:,.0f}円",
+            "想定利益: {7:,.0f}円",
+            "取引ID: {8:}"
         ]).format(*param)
 
     def _format_found_open(self, data):
@@ -56,22 +60,26 @@ class LINENotificator:
             data['volume'],
             buy['quote'][0]*data['volume'],
             data['expected_profit'],
+            data['expected_profit']/2.0,
             data['deal_id'],
         ) 
         return "\n".join([
+            "<<裁定機会検出>>"
             "[{0:}=>{1:}]",
             "ASK: {2:,.0f}",
             "BID: {3:,.0f}",
             "VOL: {4:}",
-            "{5:,.0f}円を投下し{6:,.0f}円の暫定利益を得られる取引を発見しました。",
-            "取引ID:{7:}",
+            "投下資本: {5:,.0f}円",
+            "暫定利益: {6:,.0f}円",
+            "想定利益: {7:,.0f}円",
+            "取引ID:{8:}",
             "注文を送信します。"
         ]).format(*param)
 
     def _format_found_close(self, data):
         sell = data['sell']
         buy  = data['buy']
-        profit = data['open_deal']['expected_profit'] - data['expected_profit']
+        profit = data['open_deal']['expected_profit'] + data['expected_profit']
         param = (
             buy['exchange_name'],
             sell['exchange_name'],
@@ -83,36 +91,40 @@ class LINENotificator:
             data['deal_id'],
         ) 
         return "\n".join([
+            "<<利確機会検出>>",
             "[{0:}<={1:}]",
             "ASK: {2:,.0f}",
             "BID: {3:,.0f}",
             "VOL: {4:}",
-            "取引ID:{7:}をクローズします。",
-            "{5:,.0f}円の利確コストを使い{6:,.0f}円の利益を確定させる取引を発見しました。",
+            "利確コスト: {5:,.0f}円",
+            "想定利益: {6:,.0f}円",  
+            "取引ID: {7:}",
             "注文を送信します。"
         ]).format(*param)
 
     def _format_close(self, data):
         sell = data['sell']
         buy  = data['buy']
-        profit = data['open_deal']['expected_profit'] - data['expected_profit']
+        profit = data['open_deal']['expected_profit'] + data['expected_profit']
         param = (
             buy['exchange_name'],
             sell['exchange_name'],
             buy['quote'][0],
             sell['quote'][0],
             data['volume'],
-            data['expected_profit'],
             profit,
             data['deal_id'],
         ) 
         return "\n".join([
+            "<<ポジションクローズ>>"
             "[{0:}<={1:}]",
             "ASK: {2:,.0f}",
             "BID: {3:,.0f}",
             "VOL: {4:}",
-            "取引ID:{7:}が約定しました。",
-            "{5:,.0f}円の利確コストを使い{6:,.0f}円の利益を確定させました。",
+            "確定利益: {5:,.0f}円",
+            "取引ID: {6:}",
+            "---",
+            "ポジションクローズにより{5:,.0f}円の利益が確定しました。"
         ]).format(*param)
 
     def _post_message(self, message):
