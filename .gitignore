@@ -106,3 +106,4 @@ venv.bak/
 # config-file
 config.yaml
 *.pcl
+*.db
