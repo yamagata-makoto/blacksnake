@@ -107,7 +107,7 @@ class CUI:
 
         sell = data['sell']
         buy  = data['buy']
-        print(PAIRS_FORM.format(
+        msg = PAIRS_FORM.format(
             buy['exchange_name'],
             buy['quote'][0],
             buy['quote'][1],
@@ -116,7 +116,9 @@ class CUI:
             sell['quote'][1],
             data['open_deal']['expected_profit'],
             data['expected_profit'],
-            ))
+        )
+        print(msg)
+        return msg
 
     def show_unexecuted(self, data):
 
@@ -143,4 +145,8 @@ def show_positions(plan):
     return _cui.show_positions(plan)
 
 def show_openpairs(data):
-    return _cui.show_openpairs(data)
+    if data:
+        return _cui.show_openpairs(data)
+    else:
+        print('>> UPDATE FAIL.')
+
