@@ -112,6 +112,14 @@ class TradeRule:
 
         return is_valid
 
+    def is_ready(self):
+        # 未完了のオープン注文があるか？
+        reply = True
+        status_list = [ status for status, _ in self._requests]
+        if 'open_pair' in status_list or 'confirm_open' in status_list:
+            reply = False
+        return reply
+
     def validate_quotes(self, quotes):
 
         if quotes.has_error():

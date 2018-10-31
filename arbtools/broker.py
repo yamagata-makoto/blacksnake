@@ -124,6 +124,10 @@ class Broker:
         
     def request(self, deal):
 
+        if not self._trade_rule.is_ready():
+            # 未完了のオープン注文がある場合、新規にリクエストを積まない
+            return Notiong()
+
         if len(self._requests) >= self._trade.max_order:
             return Nothing()
 
