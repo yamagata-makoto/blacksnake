@@ -89,7 +89,6 @@ class Broker:
 
     def planning(self, quotes):
 
-        quotes = self._trade_rule.validate_quotes(quotes)
         self._last_quotes = quotes
 
         volume = self.trade_volume()

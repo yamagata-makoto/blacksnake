@@ -100,8 +100,10 @@ class TradeRule:
 
     def validate_plan(self, plan):
 
-        is_valid = False
+        if plan._balances.has_error():
+            self._broker.emit('balance_error', plan._balances.errors())
 
+        is_valid = False
         buy = plan.best('buy')
         sell = plan.best('sell')
         vol = plan.target_volume()
@@ -111,12 +113,6 @@ class TradeRule:
                 is_valid = True
 
         return is_valid
-
-    def validate_quotes(self, quotes):
-
-        if quotes.has_error():
-            self._broker.emit('quote_error', quotes.errors())
-        return quotes
 
     def new_status(self, data):
 

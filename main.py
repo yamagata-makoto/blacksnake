@@ -16,9 +16,11 @@ def reverse_planned(sender, data):
     cui.show_openpairs(data)
 
 def quote_error(sender, errors):
-
-    for name, error in errors:
-        print(name, error)
+    pass
+        
+def balance_error(sender, errors):
+    for k, v in errors.items():
+        print(k, v)
 
 def found_open(sender, data, notify):
 
@@ -44,6 +46,7 @@ def main(provider, notify):
     broker.on('planned', planned)
     broker.on('reverse_planned', reverse_planned)
     broker.on('quote_error', quote_error)
+    broker.on('balance_error', balance_error)
     broker.on('found_open', found_open, notify=notify)
     broker.on('open_pair', open_pair, notify=notify)
     broker.on('found_close', found_close, notify=notify)
@@ -64,5 +67,6 @@ if __name__ == '__main__':
     try:
         main(provider, notify)
     except Exception as e:
-        notify.post_message(None, traceback.format_exc()) 
+        msg = notify.post_message(None, traceback.format_exc()) 
+        print(msg)
 

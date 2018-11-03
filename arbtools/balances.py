@@ -5,8 +5,16 @@ class Balances:
 
         self._api = api
         items = api.fetch_balances().items()
-        self._errors = { k: v for k, v in items if isinstance(v, Exception) }
+        self._errors = { k: v for k, v in items if not isinstance(v, dict) }
         self._data = { k: v for k, v in items if k not in self._errors }
+        
+    def has_error(self):
+
+        return len(self._errors) > 0
+
+    def errors(self):
+
+        return self._errors
 
     def __getitem__(self, name):
 

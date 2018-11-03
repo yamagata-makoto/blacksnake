@@ -20,6 +20,8 @@ class LINENotificator:
         func = self._formatter[trigger_name]
         message = func(data)
         self._post_message(message)
+        
+        return message
 
     def _format_open(self, data):
 
