@@ -1,6 +1,8 @@
 from functools import partial
 import datetime
 
+
+JST = datetime.timezone(datetime.timedelta(hours=+9), 'JST')
 OPENING_MESSAGE = """
 Blacksname Bitcoin Arbitrage
 DISCLAIMER: USE THE SOFTWARE AT YOUR OWN RISK
@@ -64,7 +66,7 @@ class CUI:
 
     def show_arbitrage(self, plan):
 
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
         ask = plan.best('ask')
         bid = plan.best('bid')
         profit, percent = plan.expected_profit()
@@ -135,7 +137,7 @@ class CUI:
             -data['expected_profit'],
             ))
 
-_cui = CUI(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+_cui = CUI(datetime.datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S'))
 
 def show_arbitrage(plan):
     print("")

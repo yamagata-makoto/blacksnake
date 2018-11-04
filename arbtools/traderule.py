@@ -2,6 +2,8 @@ import datetime
 from functools import partial, reduce
 
 
+JST = datetime.timezone(datetime.timedelta(hours=+9), 'JST')
+
 def nop(api, status, next_state, **kwargs):
 
     return None
@@ -11,7 +13,7 @@ def execute_order(api, status, next_state, **kwargs):
     current_state, data = status
 
     if not 'timestamp' in data:
-        data['timestamp'] = datetime.datetime.now()
+        data['timestamp'] = datetime.datetime.now(JST)
 
     ordered = data['orders'] if 'orders' in data else None 
     orders = api.create_orders(data, ordered)
