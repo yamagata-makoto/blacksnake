@@ -33,6 +33,28 @@ class Broker:
 
         return self._listeners[name](self, arg)
 
+    def save_to(self, file_name):
+
+        with open(file_name, 'wb') as f:
+            pickle.dump(self._requests, f)
+
+        return self
+
+    def load_from(self, file_name):
+
+        try:
+            with open(file_name, 'rb') as f:
+                self._requests = pickle.load(f) 
+        except:
+            pass
+
+        return self
+
+    def map_requests(self, f):
+        xs = [ f(status) for status in self._requests ]
+        return xs
+
+
     def _to_investments(self, quotes, trade_volume):
 
         def _investment(acc, item):
@@ -160,25 +182,4 @@ class Broker:
         self._requests = new_requests
 
         return self
-
-    def save_to(self, file_name):
-
-        with open(file_name, 'wb') as f:
-            pickle.dump(self._requests, f)
-
-        return self
-
-    def load_from(self, file_name):
-
-        try:
-            with open(file_name, 'rb') as f:
-                self._requests = pickle.load(f) 
-        except:
-            pass
-
-        return self
-
-    def map_requests(self, f):
-        xs = [ f(status) for status in self._requests ]
-        return xs
 
