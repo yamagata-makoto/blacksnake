@@ -11,6 +11,7 @@ class TradePlan:
         self._api = api
         self._quotes = quotes
         self._balances = balances
+        self._allowed_exitcost_ratio = 50
 
         def _best(acc, item):
 
@@ -35,6 +36,10 @@ class TradePlan:
 
         self._deal = reduce(_best, quotes.items(), defaultdict(lambda: None))
 
+
+    def set_allowed_exitcost_ratio(self, ratio):
+        
+        self._allowed_exitcost_ratio = ratio
 
     def best(self, side):
 
@@ -90,7 +95,7 @@ class TradePlan:
 
     def deal(self):
 
-        allowed_exitcost_rate = 0.5
+        allowed_exitcost_rate = self._allowed_exitcost_ratio / 100.0 
 
         profit, rate = self.expected_profit()
         allowed_exitcost = profit * allowed_exitcost_rate 

@@ -3,11 +3,12 @@
 
 system:
     demo_mode: false
-    interval: 3.0
+    interval: 5.0
 
 trade:
     volume: 0.01
     target_profit_rate: 0.4
+    allowed_exitcost_ratio: 50
 
 notify:
     line:

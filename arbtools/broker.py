@@ -121,6 +121,7 @@ class Broker:
         quotes_ = self._tradable(volume, quotes, balances)
 
         plan = TradePlan(self._api, volume, quotes_, balances)
+        plan.set_allowed_exitcost_ratio(self._trade.allowed_exitcost_ratio)
         if not self._trade_rule.validate_plan(plan):
             return Nothing() 
 
@@ -143,6 +144,7 @@ class Broker:
             }
         }
         plan = TradePlan(self._api, volume, quotes_, Balances(self._api))
+        plan.set_allowed_exitcost_ratio(self._trade.allowed_exitcost_ratio)
 
         return plan if plan.target_volume() == volume else None
 
