@@ -41,7 +41,6 @@ def close_pair(sender, data, notify):
 
 def main(cfg):
 
-    notify = LINENotificator(cfg.notify.line)
     provider = Provider(cfg.exchanges)
     broker = provider.broker(cfg.trade).load_from('deals.pcl')
 
@@ -64,6 +63,7 @@ def main(cfg):
 if __name__ == '__main__':
 
     cfg = config.load()
+    notify = LINENotificator(cfg.notify.line)
     try:
         main(cfg)
     except Exception as e:
