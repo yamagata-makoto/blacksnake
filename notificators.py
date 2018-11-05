@@ -39,7 +39,8 @@ class LINENotificator:
             data['deal_id'],
         ) 
         return "\n".join([
-            "<<ポジションオープン>>"
+            "",
+            "<<ポジションオープン>>",
             "[{0:}=>{1:}]",
             "ASK: {2:,.0f}",
             "BID: {3:,.0f}",
@@ -66,7 +67,8 @@ class LINENotificator:
             data['deal_id'],
         ) 
         return "\n".join([
-            "<<裁定機会検出>>"
+            "",
+            "<<裁定機会検出>>",
             "[{0:}=>{1:}]",
             "ASK: {2:,.0f}",
             "BID: {3:,.0f}",
@@ -93,6 +95,7 @@ class LINENotificator:
             data['deal_id'],
         ) 
         return "\n".join([
+            "",
             "<<利確機会検出>>",
             "[{0:}<={1:}]",
             "ASK: {2:,.0f}",
@@ -118,6 +121,7 @@ class LINENotificator:
             data['deal_id'],
         ) 
         return "\n".join([
+            "",
             "<<ポジションクローズ>>"
             "[{0:}<={1:}]",
             "ASK: {2:,.0f}",
