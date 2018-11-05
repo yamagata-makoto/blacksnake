@@ -1,5 +1,6 @@
 import traceback
 import importlib
+from collections import defaultdict
 from functools import reduce
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
@@ -48,7 +49,7 @@ class APIFacade:
         def _fetch(api):
             return api.fetch_order_book(self._product)
 
-        result = {}
+        result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=8) as _:
             futures = { _.submit(_fetch, v): k for k, v in self._api.items() }
             for future in as_completed(futures):
@@ -57,7 +58,7 @@ class APIFacade:
                     data = future.result()
                     result[exchange_name] = data
                 except Exception as e:
-                    result[exchange_name] = e
+                    result[exchange_name]['fetch_orderbooks_error'] = e
         return result
 
     def fetch_balances(self):
@@ -67,7 +68,7 @@ class APIFacade:
             balance = api.fetch_balance()
             return { key: balance[key] for key in ['JPY', 'BTC'] }
 
-        result = {}
+        result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=8) as _:
             futures = { _.submit(_fetch, v): k for k, v in self._api.items() }
             for future in as_completed(futures):
@@ -76,7 +77,7 @@ class APIFacade:
                     data = future.result()
                     result[exchange_name] = data
                 except Exception as e:
-                    result[exchange_name] = e
+                    result[exchange_name]['fetch_balances_error'] = e
         return result
 
     def _create_orders_params(self, data):
@@ -106,12 +107,12 @@ class APIFacade:
         def _execute(name, args):
             if ordered and (name in ordered):
                 order = ordered[name]
-                if not isinstance(order, Exception):
+                if not 'create_orders_error' in order:
                     id_ = order['id']
                     return api[name].fetch_order(id_)
             return api[name].create_order(**args)
 
-        result = {}
+        result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=2) as _:
             futures = { _.submit(_execute, k, v): k for k, v in params.items() }
             for future in as_completed(futures):
@@ -119,7 +120,9 @@ class APIFacade:
                 try:
                     result[exchange_name] = future.result()
                 except Exception as e:
-                    result[exchange_name] = e
+                    print(e)
+                    print(backtrace.format_exc())
+                    result[exchange_name]['create_orders_error'] = e
 
         return result
 
@@ -134,7 +137,7 @@ class APIFacade:
             id_ = order['id']
             return api[name].fetch_order(id_)
 
-        result = {}
+        result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=2) as _:
             orders = data['orders']
             futures = { _.submit(_execute, k, v): k for k, v in orders.items() }
@@ -143,7 +146,9 @@ class APIFacade:
                 try:
                     result[exchange_name] = future.result()
                 except Exception as e:
-                    result[exchange_name] = e
+                    result[exchange_name]['fetch_orders_error'] = e
+                    print(e)
+                    print(backtrace.format_exc())
 
         return result
 

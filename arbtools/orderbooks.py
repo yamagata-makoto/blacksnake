@@ -13,7 +13,8 @@ class OrderBooks:
         self._api = api
 
         items = (data if data else api.fetch_orderbooks()).items()
-        self._errors = { k: v for k, v in items if not isinstance(v, dict) }
+        error_key = 'fetch_orderbooks_error'
+        self._errors = { k: v for k, v in items if error_key in v }
         self._data = { k: v for k, v in items if k not in self._errors }
 
     def round(self, price_unit=100):

@@ -115,6 +115,9 @@ class Broker:
 
         volume = self.trade_volume()
         balances = Balances(self._api)
+        if balances.has_error():
+            return Nothing()
+
         quotes_ = self._tradable(volume, quotes, balances)
 
         plan = TradePlan(self._api, volume, quotes_, balances)
@@ -155,7 +158,7 @@ class Broker:
 
         if not self.request_is_ready():
             # 未完了のオープン注文がある場合、新規にリクエストを積まない
-            return Notiong()
+            return Nothing()
 
         if len(self._requests) >= self._trade.max_order:
             return Nothing()

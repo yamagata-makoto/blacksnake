@@ -18,7 +18,7 @@ def execute_order(api, status, next_state, **kwargs):
     ordered = data['orders'] if 'orders' in data else None 
     orders = api.create_orders(data, ordered)
     for exchange_name, result in orders.items():
-        if isinstance(result, Exception):
+        if 'create_orders_error' in result:
             next_state = current_state
             break
 
@@ -32,7 +32,7 @@ def confirm_order(api, status, next_state, **kwargs):
 
     def _count_closed(acc, item):
         name, order = item
-        if isinstance(order, Exception):
+        if 'fetch_orders_error' in order:
             return acc
         return acc + (order['status'] == 'closed')
 
