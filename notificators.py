@@ -35,7 +35,7 @@ class LINENotificator:
             data['volume'],
             buy['quote'][0]*data['volume'],
             data['expected_profit'],
-            data['expected_profit']/2.0,
+            data['expected_profit']-data['allowed_exitcost'],
             data['deal_id'],
         ) 
         return "\n".join([
@@ -63,7 +63,7 @@ class LINENotificator:
             data['volume'],
             buy['quote'][0]*data['volume'],
             data['expected_profit'],
-            data['expected_profit']/2.0,
+            data['expected_profit']-data['allowed_exitcost'],
             data['deal_id'],
         ) 
         return "\n".join([
@@ -77,7 +77,6 @@ class LINENotificator:
             "暫定利益: {6:,.0f}円",
             "想定利益: {7:,.0f}円",
             "取引ID:{8:}",
-            "注文を送信します。"
         ]).format(*param)
 
     def _format_found_close(self, data):
@@ -104,7 +103,6 @@ class LINENotificator:
             "利確コスト: {5:,.0f}円",
             "想定利益: {6:,.0f}円",  
             "取引ID: {7:}",
-            "注文を送信します。"
         ]).format(*param)
 
     def _format_close(self, data):
