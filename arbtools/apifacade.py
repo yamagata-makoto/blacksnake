@@ -120,8 +120,6 @@ class APIFacade:
                 try:
                     result[exchange_name] = future.result()
                 except Exception as e:
-                    print(e)
-                    print(backtrace.format_exc())
                     result[exchange_name]['create_orders_error'] = e
 
         return result
@@ -135,7 +133,7 @@ class APIFacade:
                 if ordered[name]['status'] == 'closed':
                     return ordered[name]
             id_ = order['id']
-            return api[name].fetch_order(id_)
+            return api[name].fetch_order(id_, self._product)
 
         result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=2) as _:
@@ -147,8 +145,6 @@ class APIFacade:
                     result[exchange_name] = future.result()
                 except Exception as e:
                     result[exchange_name]['fetch_orders_error'] = e
-                    print(e)
-                    print(backtrace.format_exc())
 
         return result
 
