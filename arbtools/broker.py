@@ -155,10 +155,26 @@ class Broker:
         if 'open_pair' in status_list or 'confirm_open' in status_list:
             reply = False
         return reply
-        
+
+    def unclosed_exchanges(self):
+        # 未完了のオープン注文がある取引所    
+        exchanges = []
+        for status, deal in self._requests:
+            if not status in ('open_pair', 'confirm_open'):
+                continue
+            for name, param in deal['orders'].items():
+                if 'status' in param and param['status'] == 'closed':
+                    continue
+                exchanges.append(name)
+        return set(exchanges)
+
+    def exchange_pair(self, deal):
+
+        return set(deal[side]['exchange_name'] for side in ['buy', 'sell'])
+
     def request(self, deal):
 
-        if not self.request_is_ready():
+        if self.unclosed_exchanges() & self.exchange_pair(deal):
             # 未完了のオープン注文がある場合、新規にリクエストを積まない
             return Nothing()
 

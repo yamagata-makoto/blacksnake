@@ -36,10 +36,9 @@ def confirm_order(api, status, next_state, **kwargs):
             return acc
         return acc + (order['status'] == 'closed')
 
+    data['orders'] = orders
     if reduce(_count_closed, orders.items(), 0) < 2:
         next_state = current_state
-    else:
-        data['orders'] = orders
 
     return (next_state, data)
 

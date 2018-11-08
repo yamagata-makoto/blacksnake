@@ -109,7 +109,7 @@ class APIFacade:
                 order = ordered[name]
                 if not 'create_orders_error' in order:
                     id_ = order['id']
-                    return api[name].fetch_order(id_)
+                    return api[name].fetch_order(id_, self._product)
             return api[name].create_order(**args)
 
         result = defaultdict(dict)
@@ -144,6 +144,7 @@ class APIFacade:
                 try:
                     result[exchange_name] = future.result()
                 except Exception as e:
+                    result[exchange_name]['id'] = ordered[exchange_name]['id']
                     result[exchange_name]['fetch_orders_error'] = e
 
         return result
