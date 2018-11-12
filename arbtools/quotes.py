@@ -41,4 +41,3 @@ class Quotes:
     def __contains__(self, name):
 
         return name in self._data
-

@@ -27,7 +27,7 @@ class OrderBooks:
 
             price_stepper = partial(stepped, price_unit)
             orders = sorted(list(map(price_stepper, prices)), key=itemgetter(0))
-            result = [] 
+            result = []
             for price, grouper in groupby(orders, key=itemgetter(0)):
                 result.append((price, sum(volume for _, volume in grouper)))
 
@@ -44,4 +44,3 @@ class OrderBooks:
     def quotes(self):
 
         return Quotes(self._api, self)
-

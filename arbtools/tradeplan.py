@@ -17,7 +17,7 @@ class TradePlan:
 
             buy = acc['buy']
             sell = acc['sell']
-            vol = acc['volume'] or volume 
+            vol = acc['volume'] or volume
 
             exchange_name, quote = item
 
@@ -31,14 +31,14 @@ class TradePlan:
             if bid and ((not sell) or sell['quote'] < bid):
                 sell = { 'exchange_name': exchange_name, 'quote': bid }
                 vol = min(vol, bid[1])
-            
+
             return { 'buy': buy, 'sell': sell, 'volume': vol }
 
         self._deal = reduce(_best, quotes.items(), defaultdict(lambda: None))
 
 
     def set_allowed_exitcost_ratio(self, ratio):
-        
+
         self._allowed_exitcost_ratio = ratio
 
     def best(self, side):
@@ -95,10 +95,10 @@ class TradePlan:
 
     def deal(self):
 
-        allowed_exitcost_rate = self._allowed_exitcost_ratio / 100.0 
+        allowed_exitcost_rate = self._allowed_exitcost_ratio / 100.0
 
         profit, rate = self.expected_profit()
-        allowed_exitcost = profit * allowed_exitcost_rate 
+        allowed_exitcost = profit * allowed_exitcost_rate
         if profit < 0:
             allowed_exitcost = -(profit * (1.0/allowed_exitcost_rate))
         return {

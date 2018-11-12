@@ -8,7 +8,7 @@ class Balances:
         error_key = 'fetch_balances_error'
         self._errors = { k: v for k, v in items if error_key in v }
         self._data = { k: v for k, v in items if k not in self._errors }
-        
+
     def has_error(self):
 
         return len(self._errors) > 0
@@ -22,6 +22,6 @@ class Balances:
         return self._data[name]
 
     def __contains__(self, name):
-        
+
         return name in self._data
 

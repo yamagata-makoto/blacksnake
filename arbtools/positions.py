@@ -1,9 +1,9 @@
 from functools import reduce
 
 class Positions:
-    
+
     def __init__(self, api, balances, quotes):
-        
+
         self._api = api
         def _position(acc, name):
             if (name in balances) and (name in quotes):
@@ -22,11 +22,11 @@ class Positions:
             return balance[coin]['free']
 
         return sum(map(_f, self._data.items()))
-        
+
     def net_exposure(self):
 
         return self.sum('BTC')
-        
+
 
     def net_funds(self):
 
@@ -36,4 +36,3 @@ class Positions:
     def items(self):
 
         return self._data.items()
-

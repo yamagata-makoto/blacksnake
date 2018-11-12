@@ -8,9 +8,9 @@ from concurrent.futures import as_completed
 class APIFacade:
 
     def __init__(self, exchanges, gw_name):
-        
+
         self._product = 'BTC/JPY'
-        self._gw = importlib.import_module(gw_name) 
+        self._gw = importlib.import_module(gw_name)
 
         def _new(name, value):
 
@@ -21,7 +21,7 @@ class APIFacade:
                 'verbose': False,
             }
             instance = klass(options)
-            setattr(instance, 'trading_fees', value.fees) 
+            setattr(instance, 'trading_fees', value.fees)
             return (name, instance)
 
         items = exchanges.items()
@@ -35,7 +35,6 @@ class APIFacade:
 
         return self._api.keys()
 
-
     def items(self):
 
         return self._api.items()
@@ -44,41 +43,41 @@ class APIFacade:
 
         return self._api[exchange_name]
 
-    def fetch_orderbooks(self):
-
-        def _fetch(api):
-            return api.fetch_order_book(self._product)
+    def traverse(self, f, max_workers=8):
 
         result = defaultdict(dict)
-        with ThreadPoolExecutor(max_workers=8) as _:
-            futures = { _.submit(_fetch, v): k for k, v in self._api.items() }
+        with ThreadPoolExecutor(max_workers=max_workers) as _:
+            futures = { _.submit(f, (k, v)): k for k, v in self._api.items() }
             for future in as_completed(futures):
                 exchange_name = futures[future]
-                try:
-                    data = future.result()
-                    result[exchange_name] = data
-                except Exception as e:
-                    result[exchange_name]['fetch_orderbooks_error'] = e
+                data = future.result()
+                result[exchange_name] = data
         return result
+
+    def fetch_orderbooks(self):
+
+        def _fetch(item):
+            _, api = item
+            try:
+                result = api.fetch_order_book(self._product)
+            except Exception as e:
+                result = { 'fetch_orderbooks_error: e' }
+            return result
+
+        return self.traverse(_fetch)
 
     def fetch_balances(self):
 
-        def _fetch(api):
+        def _fetch(item):
+            _, api = item
+            try:
+                balance = api.fetch_balance()
+                result = { key: balance[key] for key in ['JPY', 'BTC'] }
+            except Exception as e:
+                result = { 'fetch_balances_error': e }
+            return result
 
-            balance = api.fetch_balance()
-            return { key: balance[key] for key in ['JPY', 'BTC'] }
-
-        result = defaultdict(dict)
-        with ThreadPoolExecutor(max_workers=8) as _:
-            futures = { _.submit(_fetch, v): k for k, v in self._api.items() }
-            for future in as_completed(futures):
-                exchange_name = futures[future]
-                try:
-                    data = future.result()
-                    result[exchange_name] = data
-                except Exception as e:
-                    result[exchange_name]['fetch_balances_error'] = e
-        return result
+        return self.traverse(_fetch)
 
     def _create_orders_params(self, data):
 
@@ -98,13 +97,14 @@ class APIFacade:
             return acc
 
         return reduce(_params, ['buy', 'sell'], {})
-    
+
     def create_orders(self, data, ordered):
 
         params = self._create_orders_params(data)
         api = self._api
 
         def _execute(name, args):
+
             if ordered and (name in ordered):
                 order = ordered[name]
                 if not 'create_orders_error' in order:
@@ -148,5 +148,3 @@ class APIFacade:
                     result[exchange_name]['fetch_orders_error'] = e
 
         return result
-
-

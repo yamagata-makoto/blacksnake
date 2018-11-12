@@ -15,7 +15,7 @@ def execute_order(api, status, next_state, **kwargs):
     if not 'timestamp' in data:
         data['timestamp'] = datetime.datetime.now(JST)
 
-    ordered = data['orders'] if 'orders' in data else None 
+    ordered = data['orders'] if 'orders' in data else None
     orders = api.create_orders(data, ordered)
     for exchange_name, result in orders.items():
         if 'create_orders_error' in result:
@@ -27,7 +27,7 @@ def execute_order(api, status, next_state, **kwargs):
 def confirm_order(api, status, next_state, **kwargs):
 
     current_state, data = status
-    ordered = data['orders'] if 'orders' in data else None 
+    ordered = data['orders'] if 'orders' in data else None
     orders = api.fetch_orders(data, ordered)
 
     def _count_closed(acc, item):
@@ -58,7 +58,7 @@ def close_pair(api, status, next_state, **kwargs):
         if plan:
             result = {
                 'open_deal': data,
-                **plan.deal() 
+                **plan.deal()
             }
         return result
 
@@ -142,5 +142,3 @@ class TradeRule:
                 self._broker.emit('close_pair', new_status[1])
 
         return new_status
-
-

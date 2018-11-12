@@ -14,6 +14,6 @@ class Provider:
         return OrderBooks(self._api)
 
     def broker(self, trade):
-        
+
         return Broker(self._api, trade)
 
