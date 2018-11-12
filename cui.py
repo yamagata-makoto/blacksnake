@@ -70,7 +70,7 @@ class CUI:
         ask = plan.best('ask')
         bid = plan.best('bid')
         profit, percent = plan.expected_profit()
-        print(ARBITRAGE_FORM.format(
+        msg = ARBITRAGE_FORM.format(
             now,
             _(ask['exchange_name']),
             ask['quote'][0],
@@ -82,25 +82,31 @@ class CUI:
             plan.available_volume(),
             plan.target_volume(),
             profit,
-            percent))
+            percent)
+        print(msg)
+        return msg
 
-    def show_positions(self, plan):
+    def show_positions(self, plan, printfunc):
 
         positions = plan.positions()
         net_exposure = positions.net_exposure()
         net_funds = positions.net_funds()
         is_ok = lambda b: '[{}]'.format('OK' if b else 'NG')
-        header = "[ Net Exposure {:5.3f} BTC / Net Funds {:5.3f} JPY ]"
-        print(header.format(net_exposure, net_funds))
+        lines = []
+        header = '[ Net Exposure {:5.3f} BTC / Net Funds {:5.3f} JPY ]'
+        lines.append(header.format(net_exposure, net_funds))
         for name, value in positions.items():
-            balance, status = value 
-            print(POSITION_FORM.format(
+            balance, status = value
+            lines.append(POSITION_FORM.format(
                 _(name),
                 balance['BTC']['free'],
                 is_ok(status[0]),
                 is_ok(status[1]),
             ))
-        print("")
+        lines.append('')
+        msg = '\n'.join(lines)
+        printfunc(msg)
+        return msg
 
     def show(self, s):
         print(s)
@@ -143,8 +149,8 @@ def show_arbitrage(plan):
     print("")
     return _cui.show_arbitrage(plan)
 
-def show_positions(plan):
-    return _cui.show_positions(plan)
+def show_positions(plan, printfunc=print):
+    return _cui.show_positions(plan, printfunc)
 
 def show_openpairs(data):
     if data:

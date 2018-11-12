@@ -43,7 +43,7 @@ class APIFacade:
 
         return self._api[exchange_name]
 
-    def traverse(self, f, max_workers=8):
+    def traverse(self, f, *, skip_none=True, max_workers=8):
 
         result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=max_workers) as _:
@@ -51,7 +51,8 @@ class APIFacade:
             for future in as_completed(futures):
                 exchange_name = futures[future]
                 data = future.result()
-                result[exchange_name] = data
+                if not skip_none or data:
+                    result[exchange_name] = data
         return result
 
     def fetch_orderbooks(self):

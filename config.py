@@ -40,7 +40,7 @@ class Config:
     def exchange_fees(self):
 
         return { k: v.fees for k, v in self._params.exchanges.items() }
-        
+
 def load(filename=None):
 
     def default_filepath():
