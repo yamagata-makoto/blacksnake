@@ -43,7 +43,7 @@ class APIFacade:
 
         return self._api[exchange_name]
 
-    def traverse(self, f, *, skip_none=True, max_workers=8):
+    def traverse(self, f, *, max_workers=8, allowed_none=False):
 
         result = defaultdict(dict)
         with ThreadPoolExecutor(max_workers=max_workers) as _:
@@ -51,7 +51,7 @@ class APIFacade:
             for future in as_completed(futures):
                 exchange_name = futures[future]
                 data = future.result()
-                if not skip_none or data:
+                if allowed_none or data:
                     result[exchange_name] = data
         return result
 
@@ -62,7 +62,8 @@ class APIFacade:
             try:
                 result = api.fetch_order_book(self._product)
             except Exception as e:
-                result = { 'fetch_orderbooks_error: e' }
+                print(e)
+                result = { 'fetch_orderbooks_error': e }
             return result
 
         return self.traverse(_fetch)
@@ -75,6 +76,7 @@ class APIFacade:
                 balance = api.fetch_balance()
                 result = { key: balance[key] for key in ['JPY', 'BTC'] }
             except Exception as e:
+                print(e)
                 result = { 'fetch_balances_error': e }
             return result
 
@@ -87,20 +89,39 @@ class APIFacade:
             exchange_name = order['exchange_name']
             volume = data['volume']
             price = order['quote'][0]
-            params = {
+            args = {
                 'symbol': 'BTC/JPY',
                 'type': 'limit',
                 'side': side,
                 'amount': volume,
                 'price': price
             }
-            acc[exchange_name] = params
+            acc[exchange_name] = args
             return acc
 
         return reduce(_params, ['buy', 'sell'], {})
 
     def create_orders(self, data, ordered):
 
+        params = self._create_orders_params(data)
+
+        def _execute(item):
+            name, api = item
+            if not name in params:
+                return None
+            args = params[name]
+            try:
+                if ordered and (name in ordered) and ('id' in ordered[name]):
+                    result = ordered[name]
+                else:
+                    result = api.create_order(**args)
+            except Exception as e:
+                result = { 'create_orders_error': e }
+            return result
+
+        return self.traverse(_execute)
+
+        """
         params = self._create_orders_params(data)
         api = self._api
 
@@ -124,6 +145,7 @@ class APIFacade:
                     result[exchange_name]['create_orders_error'] = e
 
         return result
+        """
 
     def fetch_orders(self, data, ordered):
 

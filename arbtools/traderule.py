@@ -17,10 +17,15 @@ def execute_order(api, status, next_state, **kwargs):
 
     ordered = data['orders'] if 'orders' in data else None
     orders = api.create_orders(data, ordered)
-    for exchange_name, result in orders.items():
-        if 'create_orders_error' in result:
-            next_state = current_state
-            break
+
+    def _count_open(acc, item):
+        name, result = item
+        if 'id' not in result:
+            return acc
+        return acc + 1
+
+    if reduce(_count_open, orders.items(), 0) < 2:
+        next_state = current_state
 
     return (next_state, { 'orders': orders, **data })
 
@@ -32,7 +37,7 @@ def confirm_order(api, status, next_state, **kwargs):
 
     def _count_closed(acc, item):
         name, order = item
-        if 'fetch_orders_error' in order:
+        if not 'status' in order:
             return acc
         return acc + (order['status'] == 'closed')
 
@@ -42,18 +47,20 @@ def confirm_order(api, status, next_state, **kwargs):
 
     return (next_state, data)
 
+_LAST_REVERSE_ORDER = None
 def close_pair(api, status, next_state, **kwargs):
 
     current_state, data = status
     broker = kwargs['broker']
     quotes = kwargs['quotes']
+    balances = kwargs['balances']
 
     def _reverse_order(broker, data):
         # 反対売買を計画する
         buy = data['sell']['exchange_name']
         sell = data['buy']['exchange_name']
         volume = data['volume']
-        plan = broker.specified(quotes, buy, sell, volume)
+        plan = broker.specified(quotes, buy, sell, volume, balances=balances)
         result = None
         if plan:
             result = {
@@ -64,7 +71,8 @@ def close_pair(api, status, next_state, **kwargs):
 
 
     result = _reverse_order(broker, data)
-    broker.emit('reverse_planned', result)
+    _LAST_REVERSE_ORDER = result if result else _LAST_REVERSE_ORDER
+    broker.emit('reverse_planned', _LAST_REVERSE_ORDER)
     if not result:
         return status
 
@@ -121,13 +129,18 @@ class TradeRule:
         self._broker.emit('found_open', data)
         return ('open_pair', data)
 
-    def execute(self, status, quotes):
+    def execute(self, status, quotes, balances):
 
         api = self._broker._api
         status_name, _ = status
 
         f = self.rule[status_name]
-        new_status = f(api, status, broker=self._broker, quotes=quotes)
+        args = {
+            'broker': self._broker,
+            'quotes': quotes,
+            'balances': balances,
+        }
+        new_status = f(api, status, **args)
 
         if status_name == 'confirm_open':
             if new_status[0] == 'close_pair':

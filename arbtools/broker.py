@@ -18,6 +18,7 @@ class Broker:
         self._requests = []
         self._trade_rule = TradeRule(self)
         self._last_quotes = None
+        self._last_balances = None
 
     def trade_volume(self):
 
@@ -60,7 +61,7 @@ class Broker:
             name, quote = item
             price, ask_volume  = quote['ask']
             volume = min([ask_volume, trade_volume])
-            price = price * volume 
+            price = price * volume
             fees = self._api[name].trading_fees
             cost = price * (fees / 100.0)
             acc[name] = (price + cost)
@@ -91,7 +92,7 @@ class Broker:
             _, quote_volume = quote
             return all([
                 quote_volume > volume,
-                balances[name]['BTC']['free'] > volume 
+                balances[name]['BTC']['free'] > volume
             ])
 
         def _verify(acc, item):
@@ -108,14 +109,16 @@ class Broker:
 
         return OrderBooks(self._api)
 
-    def planning(self, quotes):
+    def planning(self, quotes, *, balances=None):
 
         self._last_quotes = quotes
 
         volume = self.trade_volume()
-        balances = Balances(self._api)
+        balances = balances if balances else Balances(self._api)
         if balances.has_error():
             return Nothing()
+
+        self._last_balances = balances
 
         quotes_ = self._tradable(volume, quotes, balances)
 
@@ -126,7 +129,7 @@ class Broker:
 
         return plan
 
-    def specified(self, quotes, buy, sell, volume):
+    def specified(self, quotes, buy, sell, volume, *, balances=None):
 
         quotes = quotes if quotes else self._last_quotes
 
@@ -142,7 +145,8 @@ class Broker:
                 'ask': None,
             }
         }
-        plan = TradePlan(self._api, volume, quotes_, Balances(self._api))
+        balances = balances if balances else Balances(self._api)
+        plan = TradePlan(self._api, volume, quotes_, balances)
         plan.set_allowed_exitcost_ratio(self._trade.allowed_exitcost_ratio)
 
         return plan if plan.target_volume() == volume else None
@@ -196,7 +200,8 @@ class Broker:
         new_requests = []
         while self._requests:
             status = self._requests.pop(0)
-            next_status = self._trade_rule.execute(status, self._last_quotes)
+            next_status = self._trade_rule.execute(
+                status, self._last_quotes, self._last_balances)
             if next_status:
                 new_requests.append(next_status)
         self._requests = new_requests
