@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import partial
 import datetime
 
@@ -60,6 +61,7 @@ class CUI:
 
     def __init__(self, date):
 
+        self._last_message = defaultdict(str)
         print(OPENING_MESSAGE)
         print(STARTED_ON.format(date))
 
@@ -83,10 +85,13 @@ class CUI:
             plan.target_volume(),
             profit,
             percent)
+        self._last_message['show_arbitrage'] = msg
         print(msg)
         return msg
 
     def show_positions(self, plan, printfunc):
+
+        self._last_plan = plan
 
         positions = plan.positions()
         net_exposure = positions.net_exposure()
@@ -106,10 +111,11 @@ class CUI:
         lines.append('')
         msg = '\n'.join(lines)
         printfunc(msg)
+        self._last_message['show_positions'] = msg
         return msg
 
-    def show(self, s):
-        print(s)
+    def get_last_message(self, method_name):
+        return self._last_message[method_name]
 
     def show_openpairs(self, data):
 
@@ -158,3 +164,5 @@ def show_openpairs(data):
     else:
         print('>> UPDATE FAIL.')
 
+def get_last_message(method_name):
+    return _cui.get_last_message(method_name)

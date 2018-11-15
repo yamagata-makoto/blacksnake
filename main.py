@@ -8,19 +8,15 @@ from arbtools import Provider
 from notificators import MutimediaNotificator
 
 
-DATA_ = {}
-
 def scheduled_task(notify):
 
-    plan = DATA_['plan']
-    msg = cui.show_positions(plan, printfunc=lambda x: x)
+    msg = cui.get_last_message('show_positions')
     notify.broadcast_message(None, msg)
 
 def planned(sender, plan):
 
     cui.show_arbitrage(plan)
     cui.show_positions(plan)
-    DATA_['plan'] = plan
 
 def reverse_planned(sender, data):
 
@@ -89,6 +85,6 @@ if __name__ == '__main__':
 
     except Exception as e:
         msg = traceback.format_exc()
-        notify.broadcat_message(None, msg)
+        notify.broadcast_message(None, msg)
         print(msg)
 
