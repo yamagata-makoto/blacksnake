@@ -22,6 +22,10 @@ def reverse_planned(sender, data):
 
     cui.show_openpairs(data)
 
+def confirm_order(sender, data):
+
+    cui.show_openpairs(data, confirm_form=True)
+
 def quote_error(sender, errors, notify):
 
     for k, v in errors.items():
@@ -72,6 +76,7 @@ if __name__ == '__main__':
 
         broker.on('planned', planned)
         broker.on('reverse_planned', reverse_planned)
+        broker.on('confirm_order', confirm_order)
         broker.on('quote_error', quote_error, notify=notify)
         broker.on('balance_error', balance_error, notify=notify)
         broker.on('found_open', found_open, notify=notify)

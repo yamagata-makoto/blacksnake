@@ -14,7 +14,7 @@ DISCLAIMER: USE THE SOFTWARE AT YOUR OWN RISK
 """
 STARTED_ON = "Blacksnake started on {}\n"
 ARBITRAGE_FORM = """[ Arbitrage Status: {} ]
-    Best ask         : {:10s} Ask {:,.0f} {:5.3f} 
+    Best ask         : {:10s} Ask {:,.0f} {:5.3f}
     Best bid         : {:10s} Bid {:,.0f} {:5.3f}
     Spread           : {:,.0f}
     Available volume : {:5.3f}
@@ -36,10 +36,21 @@ PAIRS_FORM = " ".join([
     "{4:,.0f}",
     "{5:5.3f}",
     "|",
-    "{6:,.0f}",
+    "{6:5,.0f}",
     "|",
     "{7:,.0f}",
 ])
+PAIRS_FORM_CONFIRM = " ".join([
+    ">>  {0:10s}",
+    "{1:,.0f}",
+    "{2:5.3f}",
+    "=>",
+    "{3:10s}",
+    "{4:,.0f}",
+    "{5:5s}",
+    "|",
+])
+
 
 UNEXEC_FORM = " ".join([
     "    ??{0:10s}",
@@ -117,10 +128,27 @@ class CUI:
     def get_last_message(self, method_name):
         return self._last_message[method_name]
 
+    def show_openpairs_confirm(self, data):
+        sell = data['sell']
+        buy  = data['buy']
+        state = 'close' if 'open_deal' in data else 'open'
+        msg = PAIRS_FORM_CONFIRM.format(
+            buy['exchange_name'],
+            buy['quote'][0],
+            buy['quote'][1],
+            sell['exchange_name'],
+            sell['quote'][0],
+            state
+        )
+        print(msg)
+        return msg
+
     def show_openpairs(self, data):
 
         sell = data['sell']
         buy  = data['buy']
+        target_profit = data['open_deal']['expected_profit']
+        expected_profit = data['expected_profit']
         msg = PAIRS_FORM.format(
             buy['exchange_name'],
             buy['quote'][0],
@@ -128,8 +156,8 @@ class CUI:
             sell['exchange_name'],
             sell['quote'][0],
             sell['quote'][1],
-            data['open_deal']['expected_profit'],
-            data['expected_profit'],
+            target_profit,
+            expected_profit,
         )
         print(msg)
         return msg
@@ -158,11 +186,13 @@ def show_arbitrage(plan):
 def show_positions(plan, printfunc=print):
     return _cui.show_positions(plan, printfunc)
 
-def show_openpairs(data):
+def show_openpairs(data, confirm_form=False):
     if data:
+        if confirm_form:
+            return _cui.show_openpairs_confirm(data)
         return _cui.show_openpairs(data)
     else:
-        print('>> UPDATE FAIL.')
+        print('>> ???')
 
 def get_last_message(method_name):
     return _cui.get_last_message(method_name)

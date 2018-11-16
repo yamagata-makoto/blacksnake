@@ -31,6 +31,8 @@ def execute_order(api, status, next_state, **kwargs):
 
 def confirm_order(api, status, next_state, **kwargs):
 
+    broker = kwargs['broker']
+
     current_state, data = status
     ordered = data['orders'] if 'orders' in data else None
     orders = api.fetch_orders(data, ordered)
@@ -42,6 +44,7 @@ def confirm_order(api, status, next_state, **kwargs):
         return acc + (order['status'] == 'closed')
 
     data['orders'] = orders
+    broker.emit('confirm_order', data)
     if reduce(_count_closed, orders.items(), 0) < 2:
         next_state = current_state
 
