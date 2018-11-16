@@ -121,32 +121,6 @@ class APIFacade:
 
         return self.traverse(_execute)
 
-        """
-        params = self._create_orders_params(data)
-        api = self._api
-
-        def _execute(name, args):
-
-            if ordered and (name in ordered):
-                order = ordered[name]
-                if not 'create_orders_error' in order:
-                    id_ = order['id']
-                    return api[name].fetch_order(id_, self._product)
-            return api[name].create_order(**args)
-
-        result = defaultdict(dict)
-        with ThreadPoolExecutor(max_workers=2) as _:
-            futures = { _.submit(_execute, k, v): k for k, v in params.items() }
-            for future in as_completed(futures):
-                exchange_name = futures[future]
-                try:
-                    result[exchange_name] = future.result()
-                except Exception as e:
-                    result[exchange_name]['create_orders_error'] = e
-
-        return result
-        """
-
     def fetch_orders(self, data, ordered):
 
         api = self._api
