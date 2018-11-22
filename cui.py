@@ -47,8 +47,9 @@ PAIRS_FORM_CONFIRM = " ".join([
     "=>",
     "{3:10s}",
     "{4:,.0f}",
-    "{5:5s}",
+    "{5:5.3f}",
     "|",
+    "{6:5s}",
 ])
 
 
@@ -132,12 +133,15 @@ class CUI:
         sell = data['sell']
         buy  = data['buy']
         state = 'close' if 'open_deal' in data else 'open'
+        sell_order = data['orders'][sell['exchange_name']]
+        buy_order = data['orders'][buy['exchange_name']]
         msg = PAIRS_FORM_CONFIRM.format(
             buy['exchange_name'],
             buy['quote'][0],
-            buy['quote'][1],
+            buy_order['filled'] if 'filled' in buy_order else 0,
             sell['exchange_name'],
             sell['quote'][0],
+            sell_order['filled'] if 'filled' in sell_order else 0,
             state
         )
         print(msg)
