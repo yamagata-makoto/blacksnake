@@ -111,12 +111,13 @@ def _format_close(data):
 class Notificator:
 
     def __init__(self):
-
-        self._formatter = defaultdict(lambda: lambda x: x)
-        self._formatter['found_open'] = self._format_found_open
-        self._formatter['open_pair'] = self._format_open
-        self._formatter['found_close'] = self._format_found_close
-        self._formatter['close_pair'] = self._format_close
+        # Use a regular dictionary instead of defaultdict
+        self._formatter = {
+            'found_open': self._format_found_open,
+            'open_pair': self._format_open,
+            'found_close': self._format_found_close,
+            'close_pair': self._format_close
+        }
 
     def _format_open(self, data):
         return _format_open(data)
@@ -129,10 +130,12 @@ class Notificator:
 
     def _format_found_close(self, data):
         return _format_found_close(data)
+    
+    def _post_message(self, message):
+        raise NotImplementedError("Subclasses must implement _post_message")
 
     def post_message(self, trigger_name, data):
-
-        func = self._formatter[trigger_name]
+        func = self._formatter.get(trigger_name, lambda x: x)
         message = func(data)
         self._post_message('\n'+message)
 
