@@ -1,6 +1,7 @@
 import pickle
 from collections import defaultdict
 from functools import reduce, partial
+from typing import Dict, List, Callable, Any, Optional, Set, Tuple
 from arbtools.balances import Balances
 from arbtools.orderbooks import OrderBooks
 from arbtools.nothing import Nothing
@@ -9,29 +10,62 @@ from arbtools.traderule import TradeRule
 
 
 class Broker:
+    """
+    Central trade orchestrator that manages trade planning and execution.
+    """
 
-    def __init__(self, api, trade):
-
+    def __init__(self, api: Any, trade: Any) -> None:
+        """
+        Initialize the Broker with API facade and trade configuration.
+        
+        Args:
+            api: API facade for exchange communication
+            trade: Trade configuration parameters
+        """
         self._api = api
         self._trade = trade
-        self._listeners = defaultdict(lambda x: x)
-        self._requests = []
+        self._listeners: Dict[str, Callable] = defaultdict(lambda: lambda *args, **kwargs: None)
+        self._requests: List[Tuple[str, Dict[str, Any]]] = []
         self._trade_rule = TradeRule(self)
-        self._last_quotes = None
-        self._last_balances = None
+        self._last_quotes: Optional[Dict[str, Any]] = None
+        self._last_balances: Optional[Balances] = None
 
-    def trade_volume(self):
-
+    def trade_volume(self) -> float:
+        """
+        Get the configured trade volume.
+        
+        Returns:
+            The trade volume from configuration
+        """
         return self._trade.volume
 
-    def on(self, name, f, **kwargs):
-
+    def on(self, name: str, f: Callable, **kwargs) -> 'Broker':
+        """
+        Register an event listener for the specified event name.
+        
+        Args:
+            name: Event name to listen for
+            f: Callback function to execute when event occurs
+            **kwargs: Additional arguments to pass to the callback
+            
+        Returns:
+            Self for method chaining
+        """
         self._listeners[name] = partial(f, **kwargs) if kwargs else f
 
         return self
 
-    def emit(self, name, arg):
-
+    def emit(self, name: str, arg: Any) -> Any:
+        """
+        Emit an event with the specified name and argument.
+        
+        Args:
+            name: Event name to emit
+            arg: Argument to pass to the event listener
+            
+        Returns:
+            Result of the event listener
+        """
         return self._listeners[name](self, arg)
 
     def save_to(self, file_name):
@@ -132,16 +166,23 @@ class Broker:
     def specified(self, quotes, buy, sell, volume, *, balances=None):
 
         quotes = quotes if quotes else self._last_quotes
-
-        if not all([buy in quotes, sell in quotes]):
+        
+        if not quotes or not all([buy in quotes, sell in quotes]):
             return None
+            
+        buy_ask = quotes.get(buy, {}).get('ask')
+        sell_bid = quotes.get(sell, {}).get('bid')
+        
+        if not buy_ask or not sell_bid:
+            return None
+            
         quotes_ = {
             buy: {
                 'bid': None,
-                'ask': quotes[buy]['ask'],
+                'ask': buy_ask,
             },
             sell: {
-                'bid': quotes[sell]['bid'],
+                'bid': sell_bid,
                 'ask': None,
             }
         }
