@@ -1,6 +1,11 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from collections import defaultdict
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from arbtools.apifacade import APIFacade
 
 class TestAPIFacade(unittest.TestCase):
@@ -117,12 +122,12 @@ class TestAPIFacade(unittest.TestCase):
         data = {
             'buy': {
                 'exchange_name': 'exchange1',
-                'price': 100,
+                'quote': [100, 1.0],  # [price, volume]
                 'side': 'buy'
             },
             'sell': {
                 'exchange_name': 'exchange2',
-                'price': 101,
+                'quote': [101, 1.0],  # [price, volume]
                 'side': 'sell'
             },
             'volume': 0.01

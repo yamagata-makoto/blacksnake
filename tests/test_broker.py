@@ -2,6 +2,11 @@ import unittest
 from unittest.mock import MagicMock, patch
 import pickle
 from collections import defaultdict
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from arbtools.broker import Broker
 from arbtools.nothing import Nothing
 
@@ -57,18 +62,23 @@ class TestBroker(unittest.TestCase):
         self.assertIsNone(result)
         
         quotes = {
-            'buy_exchange': {'ask': 100, 'bid': 99},
-            'sell_exchange': {'ask': 102, 'bid': 101}
+            'buy_exchange': {'ask': [100, 1.0], 'bid': [99, 1.0]},
+            'sell_exchange': {'ask': [102, 1.0], 'bid': [101, 1.0]}
         }
         self.broker._last_quotes = quotes
-        result = self.broker.specified(None, 'buy_exchange', 'sell_exchange', 0.01)
-        self.assertIsNotNone(result)
+        
+        mock_plan = MagicMock()
+        mock_plan.target_volume.return_value = 0.01
+        
+        with patch('arbtools.tradeplan.TradePlan', return_value=mock_plan):
+            result = self.broker.specified(None, 'buy_exchange', 'sell_exchange', 0.01)
+            self.assertIsNotNone(result)
 
     def test_specified_with_invalid_exchanges(self):
         """Test specified method handles invalid exchanges correctly."""
         quotes = {
-            'buy_exchange': {'ask': 100, 'bid': 99},
-            'sell_exchange': {'ask': 102, 'bid': 101}
+            'buy_exchange': {'ask': [100, 1.0], 'bid': [99, 1.0]},
+            'sell_exchange': {'ask': [102, 1.0], 'bid': [101, 1.0]}
         }
         result = self.broker.specified(quotes, 'invalid_exchange', 'sell_exchange', 0.01)
         self.assertIsNone(result)

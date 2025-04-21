@@ -135,7 +135,7 @@ class Notificator:
         raise NotImplementedError("Subclasses must implement _post_message")
 
     def post_message(self, trigger_name, data):
-        func = self._formatter.get(trigger_name, lambda x: x)
+        func = self._formatter.get(trigger_name, lambda x: str(x))
         message = func(data)
         self._post_message('\n'+message)
 
